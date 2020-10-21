@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>WebSocket practice</title>
+    </head>
+    <body>
+        Escribe algo: 
+        <input type="text" id="clientText">
+        <button onclick="sendMsg()">Buscar</button>
+    </body>
+    <script>
+        // Create WebSocket connection.
+        const websocket = new WebSocket('ws://localhost:65000');
+
+        // Connection opened
+        websocket.addEventListener('open', function (event) {
+            websocket.send('[CLT] Cliente conectado.');
+        });
+
+        // Connection closed
+        websocket.addEventListener('close', function (event) {
+            websocket.send('[CLT] Cliente desconectado.');
+        });
+
+        // Listen for messages
+        websocket.addEventListener('message', function (event) {
+            // console.log('Mensaje del servidor: ', event.data);
+            
+            var image = new Image();
+            image.src = event.data;
+            document.body.appendChild(image);
+        });
+
+
+        // Send a message to the websocket
+        const sendMsg = () => {
+            var text = document.getElementById("clientText").value;
+            websocket.send(text);
+        }
+
+        // var ws = new WebSocket("ws://127.0.0.1:5678/"),
+        //     messages = document.createElement('ul');
+        // ws.onmessage = function (event) {
+        //     var messages = document.getElementsByTagName('ul')[0],
+        //         message = document.createElement('li'),
+        //         content = document.createTextNode(event.data);
+        //     message.appendChild(content);
+        //     messages.appendChild(message);
+        // };
+        // document.body.appendChild(messages);
+    </script>
+</html>
