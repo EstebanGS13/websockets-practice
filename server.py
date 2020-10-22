@@ -1,28 +1,41 @@
 import asyncio
 import websockets
+import os
+import random
+from google_images_search import GoogleImagesSearch
 
 
-PORT = 65000    # A port that's not being used
+DEV_API_KEY = os.environ.get('GCS_DEVELOPER_KEY')
+PROJECT_CX = os.environ.get('GCS_CX')
+PORT = 65000
+NUM_IMG = 10    # Number of images to search
+
 
 async def handle_client(websocket, path):
     async for message in websocket:
-        print(message)
-        if message == "[CLT] Cliente conectado.":
-            # await websocket.send("[SRV] Ok.")
-            pass
-            print("[SRV] Ok.")
-        elif message == "perro":
-           
-            await websocket.send("https://cnnespanol.cnn.com/wp-content/uploads/2020/07/200703104728-labrador-retriever-stock-super-169.jpg?quality=100&strip=info")
-            # await websocket.send(f"aca te mando la foto del {message}")
+        print(f"> {message}")
 
-        else:
-            # await websocket.send(f"Mensaje recibido: {message}")
-            pass
+        if message and message != "Cliente conectado.":
+            _search_params["q"] = message   # Set the message as the query
+            gis.search(search_params=_search_params)    # Search for images
+            img_url = random.choice(gis.results()).url  # Get the URL of random image on the list
+
+            await websocket.send(img_url)
 
 
-start_server = websockets.serve(handle_client, "localhost", PORT)
-print("[SRV] Servidor iniciado.")
+if __name__ == "__main__":
+    # Provide the API key and CX
+    gis = GoogleImagesSearch(DEV_API_KEY, PROJECT_CX)
 
-asyncio.get_event_loop().run_until_complete(start_server)
-asyncio.get_event_loop().run_forever()
+    # Define search params:
+    _search_params = {
+        'q': None,
+        'num': NUM_IMG,
+        # 'safe': 'high',
+    }
+
+    start_server = websockets.serve(handle_client, "localhost", PORT)
+    print("Servidor iniciado.")
+
+    asyncio.get_event_loop().run_until_complete(start_server)
+    asyncio.get_event_loop().run_forever()
